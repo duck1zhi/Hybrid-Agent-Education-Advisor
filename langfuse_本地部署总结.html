@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Langfuse 本地部署与投顾脚本接入总结</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --ink: #1a2332;
+      --muted: #5c6b7a;
+      --line: #d5dde6;
+      --bg: #f3f0e8;
+      --card: #fffcf6;
+      --accent: #0f6e56;
+      --accent-soft: #d8f3e7;
+      --warn: #9a3412;
+      --warn-soft: #ffedd5;
+      --danger: #9f1239;
+      --danger-soft: #ffe4e6;
+      --code-bg: #243447;
+      --code-fg: #e8eef5;
+      --shadow: 0 12px 40px rgba(26, 35, 50, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #d9ebe3 0%, transparent 55%),
+        radial-gradient(900px 400px at 100% 0%, #f6e6d3 0%, transparent 50%),
+        var(--bg);
+      line-height: 1.65;
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    header {
+      margin-bottom: 36px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      max-width: 720px;
+    }
+
+    .meta {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      font-size: 13px;
+      color: var(--muted);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 6px 10px;
+    }
+
+    nav.toc {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    nav.toc h2 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+
+    nav.toc ol {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+    }
+
+    nav.toc a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    nav.toc a:hover { text-decoration: underline; }
+
+    section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 28px 28px 24px;
+      margin-bottom: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    section h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      letter-spacing: -0.01em;
+    }
+
+    section h3 {
+      margin: 22px 0 10px;
+      font-size: 17px;
+    }
+
+    p { margin: 0 0 12px; }
+
+    ul, ol { margin: 0 0 12px; padding-left: 22px; }
+    li { margin-bottom: 6px; }
+
+    .path {
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-size: 13px;
+      background: #eef3f7;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 8px;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eef4f0;
+      font-weight: 600;
+    }
+
+    .callout {
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin: 14px 0;
+      font-size: 14px;
+    }
+
+    .callout.ok {
+      background: var(--accent-soft);
+      border-left: 4px solid var(--accent);
+    }
+
+    .callout.warn {
+      background: var(--warn-soft);
+      border-left: 4px solid var(--warn);
+      color: #7c2d12;
+    }
+
+    .callout.danger {
+      background: var(--danger-soft);
+      border-left: 4px solid var(--danger);
+      color: #881337;
+    }
+
+    pre {
+      background: var(--code-bg);
+      color: var(--code-fg);
+      border-radius: 12px;
+      padding: 16px 18px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.55;
+      margin: 12px 0 4px;
+    }
+
+    code {
+      font-family: Consolas, "Cascadia Mono", monospace;
+    }
+
+    .mermaid {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px 10px;
+      margin: 14px 0 6px;
+      overflow-x: auto;
+    }
+
+    .step-list {
+      counter-reset: step;
+      list-style: none;
+      padding: 0;
+    }
+
+    .step-list > li {
+      position: relative;
+      padding: 14px 14px 14px 58px;
+      margin-bottom: 10px;
+      background: #f7faf8;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .step-list > li::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    footer {
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    @media (max-width: 640px) {
+      .wrap { padding: 28px 14px 60px; }
+      section { padding: 20px 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="eyebrow">CASE · 投顾 AI 助手 · 效果评估</div>
+      <h1>Langfuse 本地部署与投顾脚本接入总结</h1>
+      <p class="subtitle">
+        记录本机 Windows 环境下，用 Docker Compose 部署 Langfuse、接入
+        LangGraph 投顾 Agent，以及过程中实际踩坑与复用方法。
+      </p>
+      <div class="meta">
+        <span class="chip">部署目录：H:\Langfuse</span>
+        <span class="chip">UI：http://localhost:3000</span>
+        <span class="chip">脚本：1-hybrid_wealth_advisor_langgraph_langfuse.py</span>
+      </div>
+    </header>
+
+    <nav class="toc">
+      <h2>目录</h2>
+      <ol>
+        <li><a href="#overview">整体流程总览</a></li>
+        <li><a href="#deploy">本地部署全过程</a></li>
+        <li><a href="#issues">过程中遇到的问题</a></li>
+        <li><a href="#notes">注意事项</a></li>
+        <li><a href="#reuse">后续再次调用 Langfuse</a></li>
+        <li><a href="#flowcharts">Mermaid 流程图</a></li>
+      </ol>
+    </nav>
+
+    <!-- 1. 总览 -->
+    <section id="overview">
+      <h2>1. 整体流程总览</h2>
+      <p>
+        目标是把可观测性从 LangSmith 切到<strong>本地自建 Langfuse</strong>：数据留在本机，
+        投顾脚本通过 Callback 上报 Traces，原 LangSmith 脚本保持不动。
+      </p>
+      <div class="mermaid">
+flowchart LR
+  A[安装 Docker / WSL] --> B[克隆并启动 Langfuse]
+  B --> C[注册并获取 API Keys]
+  C --> D[配置环境变量]
+  D --> E[运行 langfuse 版投顾脚本]
+  E --> F[在 localhost:3000 查看 Traces]
+      </div>
+    </section>
+
+    <!-- 2. 部署过程 -->
+    <section id="deploy">
+      <h2>2. 本地部署全过程</h2>
+
+      <h3>2.1 目录规划</h3>
+      <table>
+        <thead>
+          <tr><th>路径</th><th>用途</th><th>实际结果</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="path">H:\Langfuse</span></td>
+            <td>Langfuse 源码与 docker-compose</td>
+            <td>已用 <code>git clone ... .</code> 避免重复子目录</td>
+          </tr>
+          <tr>
+            <td><span class="path">H:\DockerData</span></td>
+            <td>Docker 磁盘镜像（建议）</td>
+            <td>目录已创建；可在 Docker Desktop 中将 Disk image 指到此处</td>
+          </tr>
+          <tr>
+            <td><span class="path">H:\Docker Desktop</span></td>
+            <td>希望的安装目录</td>
+            <td>winget 实际装到了默认的 <span class="path">C:\Program Files\Docker</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>2.2 分步操作</h3>
+      <ol class="step-list">
+        <li>
+          <strong>安装 Docker Desktop</strong><br />
+          通过 winget 安装 <code>Docker.DockerDesktop</code>。安装后客户端可用，但引擎依赖 WSL2。
+        </li>
+        <li>
+          <strong>启用并安装 WSL</strong><br />
+          DISM 启用 <code>Microsoft-Windows-Subsystem-Linux</code> 与 <code>VirtualMachinePlatform</code>；
+          重启后仍需 <code>winget install Microsoft.WSL</code>，再启动 Docker Desktop。
+        </li>
+        <li>
+          <strong>克隆 Langfuse（无嵌套文件夹）</strong>
+          <pre><code>New-Item -ItemType Directory -Force -Path H:\Langfuse | Out-Null
+Set-Location H:\Langfuse
+git config --global core.longpaths true
+git clone https://github.com/langfuse/langfuse.git .</code></pre>
+        </li>
+        <li>
+          <strong>启动服务</strong>
+          <pre><code>Set-Location H:\Langfuse
+docker compose up -d</code></pre>
+          首次会拉取 postgres / redis / clickhouse / minio / langfuse-web / worker 等镜像，耗时较长。
+        </li>
+        <li>
+          <strong>初始化账号与密钥</strong><br />
+          打开 <a href="http://localhost:3000" target="_blank" rel="noopener">http://localhost:3000</a> →
+          Sign up → 创建 Organization / Project → Settings → API Keys，获取
+          <code>pk-lf-...</code> 与 <code>sk-lf-...</code>。<br />
+          「Enable AI powered features」本地试用可保持关闭。
+        </li>
+        <li>
+          <strong>接入投顾脚本（新文件，不改原脚本）</strong><br />
+          新文件：<span class="path">1-hybrid_wealth_advisor_langgraph_langfuse.py</span><br />
+          用 Langfuse <code>CallbackHandler</code> 替代 LangSmith，并在脚本内关闭
+          <code>LANGCHAIN_TRACING_V2</code>，避免重复上报。
+        </li>
+      </ol>
+
+      <div class="callout ok">
+        验收标准：浏览器访问 localhost:3000 返回可用页面；跑脚本后项目 Traces 中出现本次调用链。
+      </div>
+    </section>
+
+    <!-- 3. 问题 -->
+    <section id="issues">
+      <h2>3. 过程中遇到的问题</h2>
+      <table>
+        <thead>
+          <tr><th>问题</th><th>现象</th><th>原因 / 处理</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Docker 未安装</td>
+            <td><code>docker</code> 命令找不到</td>
+            <td>winget 安装 Docker Desktop；直连官网安装包曾 Connection reset</td>
+          </tr>
+          <tr>
+            <td>WSL 未就绪</td>
+            <td>Docker 客户端在，引擎连不上；重启后仍提示未安装 WSL</td>
+            <td>DISM 启用功能 + 重启 + <code>winget install Microsoft.WSL</code></td>
+          </tr>
+          <tr>
+            <td>Git 路径过长</td>
+            <td>clone 失败：Filename too long</td>
+            <td><code>git config --global core.longpaths true</code> 后 <code>git reset --hard</code></td>
+          </tr>
+          <tr>
+            <td>镜像拉取失败 / 很慢</td>
+            <td>auth.docker.io EOF；反复 Downloading</td>
+            <td>网络不稳，多次 <code>docker compose up -d</code> 重试后成功</td>
+          </tr>
+          <tr>
+            <td>Langfuse 401 Unauthorized</td>
+            <td>Agent 正常跑，但刷 <code>Failed to export spans ... 401</code></td>
+            <td>只设了 pk/sk，未把 <code>LANGFUSE_BASE_URL</code> 写回环境；SDK 可能打到云端。已在脚本中强制写回 env 并显式传 <code>base_url</code></td>
+          </tr>
+          <tr>
+            <td>安装路径未按预期</td>
+            <td>希望装到 H:\Docker Desktop</td>
+            <td>winget 落到默认 C 盘路径；程序位置影响小于 Disk image 位置</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout warn">
+        401 不影响投顾问答结果，只影响 Traces 是否进 Langfuse。业务能跑 ≠ 观测已通。
+      </div>
+    </section>
+
+    <!-- 4. 注意事项 -->
+    <section id="notes">
+      <h2>4. 注意事项</h2>
+      <ul>
+        <li>本地自建必须配置 <code>LANGFUSE_BASE_URL=http://localhost:3000</code>，不要用云端地址。</li>
+        <li>公钥 <code>pk-lf-</code>、私钥 <code>sk-lf-</code> 成对使用，复制时勿带空格/换行；Secret 通常只显示一次。</li>
+        <li>环境变量优先写在「用户变量」，改完后<strong>新开终端</strong>再跑脚本。</li>
+        <li>占空间的是 Docker 数据盘，建议在 Docker Desktop 将 Disk image 指到 <span class="path">H:\DockerData</span>。</li>
+        <li>克隆到 <span class="path">H:\Langfuse</span> 时用末尾 <code>.</code>，避免 <code>H:\Langfuse\langfuse</code> 重复目录。</li>
+        <li>Windows 拉 Langfuse 仓库务必开启 <code>core.longpaths</code>。</li>
+        <li>端口占用：UI 默认 3000，MinIO 9090；冲突需改 compose 映射并同步改 Base URL。</li>
+        <li>停服务用 <code>docker compose down</code>；带 <code>-v</code> 会删数据卷，本地账号与 Traces 会清空。</li>
+        <li>原课件 <span class="path">1-...langsmith.py</span> 未改；Langfuse 版是独立新文件。</li>
+      </ul>
+    </section>
+
+    <!-- 5. 再次调用 -->
+    <section id="reuse">
+      <h2>5. 后续再次调用 Langfuse 的方法</h2>
+
+      <h3>5.1 确认服务在跑</h3>
+      <pre><code>Set-Location H:\Langfuse
+docker compose ps
+# 若未运行：
+docker compose up -d</code></pre>
+
+      <h3>5.2 设置环境变量（PowerShell）</h3>
+      <pre><code>$env:LANGFUSE_PUBLIC_KEY="pk-lf-你的公钥"
+$env:LANGFUSE_SECRET_KEY="sk-lf-你的私钥"
+$env:LANGFUSE_BASE_URL="http://localhost:3000"
+# 通义密钥若系统已配置可省略
+$env:DASHSCOPE_API_KEY="你的通义密钥"</code></pre>
+
+      <h3>5.3 运行投顾脚本</h3>
+      <pre><code>python .\1-hybrid_wealth_advisor_langgraph_langfuse.py</code></pre>
+      <p>启动时应看到：</p>
+      <pre><code>LANGFUSE_ENABLED= True
+LANGFUSE_BASE_URL= http://localhost:3000
+Langfuse 追踪已启用</code></pre>
+
+      <h3>5.4 查看追踪</h3>
+      <p>
+        浏览器打开 <a href="http://localhost:3000" target="_blank" rel="noopener">http://localhost:3000</a>
+        → 进入对应 Project → <strong>Traces</strong>。
+      </p>
+
+      <h3>5.5 快速自检密钥（可选）</h3>
+      <pre><code>python H:\Langfuse\check_langfuse_keys.py
+# 期望输出含 RESULT=VALID</code></pre>
+
+      <h3>5.6 代码侧接入要点（已在新脚本中）</h3>
+      <pre><code>from langfuse import Langfuse
+from langfuse.langchain import CallbackHandler
+
+# 写回 env + 显式 base_url，避免 401
+os.environ["LANGFUSE_BASE_URL"] = "http://localhost:3000"
+client = Langfuse(public_key=..., secret_key=..., base_url=...)
+handler = CallbackHandler()
+
+agent.invoke(state, config={
+    "callbacks": [handler],
+    "tags": ["wealth-advisor", "hybrid-agent"],
+    "metadata": {"customer_id": "..."},
+    "run_name": "wealth-advisor-..."
+})
+client.flush()  # 短脚本必须 flush</code></pre>
+    </section>
+
+    <!-- 6. 流程图 -->
+    <section id="flowcharts">
+      <h2>6. Mermaid 流程图</h2>
+
+      <h3>6.1 部署决策与排障</h3>
+      <div class="mermaid">
+flowchart TD
+  Start([开始本地部署]) --> HasDocker{本机有 Docker?}
+  HasDocker -->|否| InstallDocker[winget 安装 Docker Desktop]
+  HasDocker -->|是| CheckWSL{WSL2 可用?}
+  InstallDocker --> CheckWSL
+  CheckWSL -->|否| EnableWSL[DISM 启用功能]
+  EnableWSL --> Reboot[重启 Windows]
+  Reboot --> InstallWSLPkg[winget 安装 Microsoft.WSL]
+  InstallWSLPkg --> StartDocker[启动 Docker Desktop]
+  CheckWSL -->|是| StartDocker
+  StartDocker --> Clone[克隆到 H:\Langfuse]
+  Clone --> LongPath{clone 路径过长?}
+  LongPath -->|是| FixLong[开启 core.longpaths 并重置]
+  LongPath -->|否| ComposeUp[docker compose up -d]
+  FixLong --> ComposeUp
+  ComposeUp --> PullOK{镜像拉取成功?}
+  PullOK -->|否| Retry[网络重试 / 再次 compose up]
+  Retry --> PullOK
+  PullOK -->|是| WaitReady[等待 web Ready]
+  WaitReady --> Signup[注册并创建项目密钥]
+  Signup --> Done([部署完成])
+      </div>
+
+      <h3>6.2 投顾脚本与 Langfuse 数据流</h3>
+      <div class="mermaid">
+sequenceDiagram
+  participant U as 用户/终端
+  participant S as langfuse版投顾脚本
+  participant G as LangGraph Agent
+  participant L as Langfuse localhost:3000
+
+  U->>S: 设置 pk/sk/BASE_URL 并运行
+  S->>S: 写回 os.environ + Langfuse(base_url)
+  S->>G: invoke(state, callbacks=CallbackHandler)
+  G->>G: assess / reactive 或 deliberative 节点
+  G-->>L: OTEL spans 异步上报
+  alt 鉴权与地址正确
+    L-->>U: Traces 可见
+  else BASE_URL 未生效或密钥错误
+    L-->>S: 401 Unauthorized
+    Note over S,U: Agent 仍可出答，但无 Trace
+  end
+  S->>L: flush 确保短进程发完
+  S-->>U: 打印最终投顾响应
+      </div>
+
+      <h3>6.3 日常再次使用</h3>
+      <div class="mermaid">
+flowchart TD
+  A([需要看追踪]) --> B[H:\Langfuse 下 docker compose up -d]
+  B --> C[确认 localhost:3000 可打开]
+  C --> D[终端设置三项环境变量]
+  D --> E[运行 1-...langfuse.py]
+  E --> F{出现 401?}
+  F -->|是| G[检查 BASE_URL 是否 localhost:3000<br/>并重新复制密钥]
+  G --> E
+  F -->|否| H[打开 Project / Traces 分析]
+  H --> I([结束])
+      </div>
+
+      <div class="callout danger">
+        切勿把真实 Secret Key 写进 HTML、截图或提交到公开仓库。本文仅保留占位符写法。
+      </div>
+    </section>
+
+    <footer>
+      文档生成自本机实际部署过程 · Langfuse Docker Compose + LangGraph Callback 接入
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      themeVariables: {
+        primaryColor: "#d8f3e7",
+        primaryTextColor: "#1a2332",
+        primaryBorderColor: "#0f6e56",
+        lineColor: "#5c6b7a",
+        secondaryColor: "#ffedd5",
+        tertiaryColor: "#fffcf6",
+        fontFamily: "Segoe UI, PingFang SC, Microsoft YaHei, sans-serif"
+      },
+      flowchart: { curve: "basis", htmlLabels: true },
+      securityLevel: "loose"
+    });
+  </script>
+</body>
+</html>

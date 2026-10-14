@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>课程路径：基础与进阶（资料库）</title>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "neutral",
+      flowchart: { curve: "basis", htmlLabels: true },
+    });
+  </script>
+  <style>
+    :root {
+      --bg: #f7f4ef;
+      --ink: #1c1b19;
+      --muted: #5c574f;
+      --line: #d9d2c5;
+      --card: #fffdf8;
+      --foundation: #2f6f4e;
+      --bridge: #8a5a18;
+      --advanced: #1f4e79;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 80% 50% at 10% 0%, #e8efe8 0%, transparent 55%),
+        radial-gradient(ellipse 70% 45% at 90% 10%, #e7eef5 0%, transparent 50%),
+        var(--bg);
+      line-height: 1.55;
+    }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 3.5rem;
+    }
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin: 0 0 0.5rem;
+    }
+    .lead {
+      color: var(--muted);
+      margin: 0 0 1.75rem;
+      max-width: 42rem;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.25rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.92rem;
+    }
+    .legend span::before {
+      content: "";
+      display: inline-block;
+      width: 0.7rem;
+      height: 0.7rem;
+      margin-right: 0.4rem;
+      border-radius: 2px;
+      vertical-align: middle;
+    }
+    .legend .f::before { background: var(--foundation); }
+    .legend .b::before { background: var(--bridge); }
+    .legend .a::before { background: var(--advanced); }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1rem 0.75rem 0.5rem;
+      overflow-x: auto;
+    }
+    .mermaid { display: flex; justify-content: center; }
+    .notes {
+      margin-top: 1.75rem;
+      padding: 1rem 1.15rem;
+      border-left: 3px solid var(--foundation);
+      background: rgba(255, 253, 248, 0.85);
+      border-radius: 0 8px 8px 0;
+    }
+    .notes h2 {
+      font-size: 1.05rem;
+      margin: 0 0 0.6rem;
+    }
+    .notes ul {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: var(--muted);
+    }
+    .notes li { margin: 0.35rem 0; }
+    code {
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.88em;
+      background: #efeae1;
+      padding: 0.1em 0.35em;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>课程路径：基础课与进阶课</h1>
+    <p class="lead">
+      依据资料库在售班次整理。基础课只有明确课名；进阶分「技能衔接」与「项目实战」。
+      规划时勿编造资料库外的「预备班 / 强化班」。
+    </p>
+
+    <div class="legend">
+      <span class="f">基础层</span>
+      <span class="b">进阶衔接（技能）</span>
+      <span class="a">进阶实战（项目）</span>
+    </div>
+
+    <div class="panel">
+      <pre class="mermaid">
+flowchart TB
+  startNode(["零基础 / 未学过 Python"])
+
+  subgraph foundationLayer ["基础层：明确基础课"]
+    C01["C01 Python入门班<br/>1280元 · 零基础可报<br/>4周/8节"]
+  end
+
+  subgraph bridgeLayer ["进阶衔接：打技能"]
+    C02["C02 Python数据分析班<br/>3680元<br/>建议具备 Python 入门基础"]
+    C05["C05 大模型应用开发班<br/>5280元<br/>要求具备 Python 入门基础"]
+  end
+
+  subgraph advancedLayer ["进阶实战：项目课"]
+    C04["C04 机器学习项目班<br/>6980元<br/>要求学过 Python 数据分析"]
+    C06["C06 AI智能体实战班<br/>7580元<br/>建议先完成大模型应用开发班"]
+  end
+
+  startNode --> C01
+  C01 -->|"先修满足后"| C02
+  C01 -->|"先修满足后"| C05
+  C02 -->|"先修满足后"| C04
+  C05 -->|"建议先完成"| C06
+
+  pathA["路径A：数据 / 传统建模"]
+  pathB["路径B：大模型 / Agent"]
+  C02 -.-> pathA
+  C04 -.-> pathA
+  C05 -.-> pathB
+  C06 -.-> pathB
+      </pre>
+    </div>
+
+    <section class="notes">
+      <h2>怎么读这张图</h2>
+      <ul>
+        <li><strong>基础课（唯一入口）</strong>：资料库里明确可零基础报名的是 <code>C01 Python入门班</code>，不是泛指的「基础强化班」。</li>
+        <li><strong>进阶衔接</strong>：<code>C02</code>（数据分析）、<code>C05</code>（大模型应用）都建立在入门之上，用来练技能。</li>
+        <li><strong>进阶实战</strong>：<code>C04</code> 要求学过数据分析；<code>C06</code> 建议先完成大模型应用开发班。不宜跳过衔接课直接上项目课。</li>
+        <li><strong>预算提示</strong>：10000 元量级通常够「入门 + 一门衔接」或「单门进阶」，很难同时报两门高价项目课；具体以资料库价格核算。</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>
