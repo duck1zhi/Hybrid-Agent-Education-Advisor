@@ -23,3 +23,8 @@ venv/
 *.swp
 .DS_Store
 Thumbs.db
+
+# 本地说明页，不上传 GitHub
+报班活动-续报福利说明.html
+课程路径-基础与进阶.html
+
