@@ -147,24 +147,27 @@ REACTIVE_AGENT_PROMPT = """你是教培机构咨询规划助手的反应式模�
 1. 课程班次查询 — 从资料库汇总班次：价格、上课星期/时间、讲师、报名条件、各期开结课，以及「各课程剩余名额」表中的实时名额（每日一更）
 2. 课程内容查询 — 根据课程关键词，从资料库读取某门课的大纲、周次主题、核心内容、学习产出
 3. 排课表查询 — 根据课程关键词，从资料库读取某门课的上课星期、时间、各期开结课与具体有课日期
+4. 报班活动查询 — 从资料库读取限时优惠 / 续报折扣 / 折上折 / 续报送三门课等活动规则与费用参考
 
 调用格式（单独一行，可写多个）：
 [CALL_TOOL:工具名]
 例如：
 [CALL_TOOL:课程内容查询]
 [CALL_TOOL:排课表查询]
+[CALL_TOOL:报班活动查询]
 
 何时必须调用工具：
 - 问「学什么/课程内容/大纲/每周主题/学习产出」→ 课程内容查询
 - 问「什么时候上课/排课/日历/哪天有课/第几期」→ 排课表查询
 - 只问价格、有哪些班、班次总览 → 课程班次查询
+- 问「限时优惠/限时折扣/打折/几折/折上折/续报福利/赠课/送三门/活动价/现价」→ 必须调用报班活动查询；若还问原价/名额可同时调用课程班次查询
 - 同时问内容与时间 → 两个工具都调用
 
 何时不要调用工具：
 - 纯闲聊、与课程无关、或仅根据已给学员信息就能答的问题
 
 注意：
-- 不要编造资料库中没有的课程、日期、价格、名额
+- 不要编造资料库中没有的课程、日期、价格、名额、折扣
 - 本轮若需要工具，正文可简短说明「正在查询资料库」，并务必带上 CALL_TOOL 标记
 - 若不需要工具，直接给出简洁准确回答，不要输出 CALL_TOOL
 
@@ -180,12 +183,13 @@ FINAL_ANSWER_PROMPT = """你是教培机构咨询规划助手。请严格依据�
 {tool_result}
 
 回答要求：
-1. 直接回应用户问的点（内容题讲大纲/周次；时间题讲星期、时段、期次与关键日期）
+1. 直接回应用户问的点（内容题讲大纲/周次；时间题讲星期、时段、期次与关键日期；活动题讲折扣/折上折/赠课/参考现价）
 2. 只引用检索结果中出现的事实；缺失则明确说「资料库中未写明」
 3. 结构清晰：可用分点或按周次/期次列表，避免空话
 4. 若命中多门课，先列候选再分别简述，或请用户确认课程名
 5. 语气专业友好，面向学员或课程顾问
 6. 不要承诺就业、考证通过等结果
+7. 若检索结果含报班活动表，优先用其中的折扣规则与费用参考表作答，不要说「资料库没有活动信息」
 
 请输出可直接展示给用户的自然语言回答。
 """
@@ -611,6 +615,80 @@ def query_course_timetable(query: str = "") -> str:
     return result
 
 
+# 报班活动说明表（限时优惠 / 续报福利）；优先用「限时优惠」完整版文件名
+PROMO_XLSX_CANDIDATES = [
+    KB_DIR / "报班活动-限时优惠与续报福利说明.xlsx",
+    KB_DIR / "报班活动-续报福利说明.xlsx",
+]
+
+
+def _resolve_promo_xlsx() -> Optional[Path]:
+    """定位资料库中的报班活动说明 xlsx。"""
+    for path in PROMO_XLSX_CANDIDATES:
+        if path.exists():
+            return path
+    # 兼容后续改名：匹配「报班活动」前缀
+    matches = sorted(KB_DIR.glob("报班活动*.xlsx"))
+    return matches[0] if matches else None
+
+
+def _sheet_to_text_blocks(ws, max_rows: int = 40, max_cols: int = 8) -> List[str]:
+    """把工作表前若干行转成可读文本行。"""
+    lines: List[str] = []
+    for r in range(1, min((ws.max_row or 0), max_rows) + 1):
+        cells: List[str] = []
+        empty = True
+        for c in range(1, min((ws.max_column or 0), max_cols) + 1):
+            val = ws.cell(r, c).value
+            if val is None or str(val).strip() == "":
+                cells.append("")
+            else:
+                empty = False
+                cells.append(str(val).strip())
+        if empty:
+            continue
+        # 去掉尾部空列
+        while cells and cells[-1] == "":
+            cells.pop()
+        lines.append(" | ".join(cells))
+    return lines
+
+
+def query_promo_activity(query: str = "") -> str:
+    """
+    报班活动查询：读取资料库「报班活动-*.xlsx」中的限时优惠、续报折扣、赠课与费用参考。
+    query 仅用于日志；活动规则按整表返回，保证折扣/折上折/赠课完整可答。
+    """
+    path = _resolve_promo_xlsx()
+    if path is None:
+        return "资料库中未找到报班活动说明表（报班活动-*.xlsx）。"
+
+    wb = openpyxl.load_workbook(path, data_only=True, read_only=True)
+    blocks: List[str] = [
+        f"报班活动说明（来源：资料库/{path.name}）",
+        "说明：限时优惠活动管学费折扣；续报福利管赠课；二者可同时享受。",
+    ]
+    # 优先输出与折扣最相关的工作表，其余随后
+    preferred = ["活动概览", "限时优惠规则", "续报赠课三门", "费用参考", "课程进阶路径", "顾问话术"]
+    sheet_names = list(wb.sheetnames)
+    ordered = [n for n in preferred if n in sheet_names]
+    ordered += [n for n in sheet_names if n not in ordered]
+
+    # 若问题明显只问折扣/赠课，仍返回全表关键页，避免漏折上折
+    for name in ordered:
+        ws = wb[name]
+        lines = _sheet_to_text_blocks(ws)
+        if not lines:
+            continue
+        blocks.append(f"===== {name} =====")
+        blocks.extend(lines)
+
+    wb.close()
+    result = "\n".join(blocks)
+    print(f"[DEBUG] 报班活动查询: file={path.name}, query={query[:40]!r}, len={len(result)}")
+    return result
+
+
 def extract_tool_calls(text: str) -> List[str]:
     """从LLM输出中解析 [CALL_TOOL:工具名]，按出现顺序去重。"""
     names = re.findall(r"\[CALL_TOOL:([^\]]+)\]", text)
@@ -686,6 +764,21 @@ def assemble_deliberative_course_data(
     else:
         timetable_text = "本次未查询排课表（问题未涉及具体日历或上课日期冲突）"
 
+    # 4) 报班活动：涉及折扣/续报赠课/折上折时装配，供规划引用真实活动规则
+    promo_keys = (
+        "限时", "优惠", "折扣", "打折", "几折", "折上折",
+        "续报", "赠课", "送三门", "活动价", "现价", "福利",
+    )
+    need_promo = any(k in user_query for k in promo_keys)
+    promo_text = ""
+    if need_promo:
+        promo_text = query_promo_activity(user_query)
+        tools_used.append("报班活动查询")
+        if not (promo_text or "").strip():
+            unknown.append("报班活动：资料库未返回有效文本")
+    else:
+        promo_text = "本次未查询报班活动表（问题未涉及限时优惠/续报折扣/赠课）"
+
     matched_names = [m["name"] for m in matched] if matched else []
     all_names = [m["name"] for m in COURSE_KB_INDEX]
 
@@ -699,6 +792,7 @@ def assemble_deliberative_course_data(
             "班次与名额": _clip_kb_text(schedule_text, 8000),
             "课程内容": _clip_kb_text(content_text, 12000),
             "排课表": _clip_kb_text(timetable_text, 8000) if need_timetable else timetable_text,
+            "报班活动": _clip_kb_text(promo_text, 8000) if need_promo else promo_text,
         },
         "unknown": unknown,
         "source_note": "课程硬事实仅来自资料库工具原文，非模型编造；规划已加载全部在售课程",
@@ -757,6 +851,7 @@ def reactive_processing(state: EducationAdvisorState) -> EducationAdvisorState:
             "课程班次查询": query_course_schedule,
             "课程内容查询": query_course_content,
             "排课表查询": query_course_timetable,
+            "报班活动查询": query_promo_activity,
         }
 
         user_query = state["user_query"]
@@ -772,6 +867,23 @@ def reactive_processing(state: EducationAdvisorState) -> EducationAdvisorState:
         print("[DEBUG] ReAct首轮输出:", first_response)
 
         tool_names = extract_tool_calls(first_response)
+        # 折扣/续报活动类问题：强制走报班活动表；问现价/多少钱时再带上班次原价
+        promo_keys = (
+            "限时", "优惠", "折扣", "打折", "几折", "折上折",
+            "续报", "赠课", "送三门", "活动价", "现价", "福利",
+        )
+        price_keys = ("多少钱", "价格", "原价", "现价", "学费", "费用")
+        need_promo = any(k in user_query for k in promo_keys)
+        if need_promo:
+            forced: List[str] = []
+            if "报班活动查询" not in tool_names:
+                forced.append("报班活动查询")
+            if any(k in user_query for k in price_keys) and "课程班次查询" not in tool_names:
+                forced.append("课程班次查询")
+            if forced:
+                tool_names = forced + [n for n in tool_names if n not in forced]
+                print(f"[DEBUG] 已强制补充工具: {forced}")
+
         if tool_names:
             tool_blocks: List[str] = []
             for tool_name in tool_names:
@@ -779,11 +891,19 @@ def reactive_processing(state: EducationAdvisorState) -> EducationAdvisorState:
                     tool_blocks.append(f"【{tool_name}】未知工具，已跳过。")
                     continue
                 print(f"[DEBUG] 调用工具: {tool_name}")
-                # 三个工具均传入用户原问：班次查询可按关键词收窄，未命中则返回全部
+                # 工具均传入用户原问：班次查询可按关键词收窄，未命中则返回全部
                 tool_out = tools_map[tool_name](user_query)
                 tool_blocks.append(f"### 工具[{tool_name}]返回\n{tool_out}")
 
             tool_result = "\n\n".join(tool_blocks)
+            # 活动类问题：在最终作答前再强调必须引用活动表，避免模型仍说「未写明」
+            if need_promo:
+                tool_result = (
+                    tool_result
+                    + "\n\n【作答硬约束】用户在问限时优惠/续报折扣/赠课。"
+                    "上方「报班活动查询」返回中已有折扣与费用参考，"
+                    "必须据此明确回答几折与参考现价；禁止再说资料库未写明限时优惠。"
+                )
             final_prompt = ChatPromptTemplate.from_template(FINAL_ANSWER_PROMPT)
             final_chain = final_prompt | llm | StrOutputParser()
             final_response = final_chain.invoke({

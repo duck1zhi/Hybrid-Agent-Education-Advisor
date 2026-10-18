@@ -1,0 +1,369 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>报班活动：限时优惠与续报福利说明</title>
+  <style>
+    :root {
+      --bg: #f7f4ef;
+      --ink: #1c1b19;
+      --muted: #5c574f;
+      --line: #d9d2c5;
+      --card: #fffdf8;
+      --accent: #8a3b12;
+      --foundation: #2f6f4e;
+      --bridge: #8a5a18;
+      --advanced: #1f4e79;
+      --tag: #c45c26;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 80% 50% at 10% 0%, #f3e6d8 0%, transparent 55%),
+        radial-gradient(ellipse 70% 45% at 90% 10%, #e7eef5 0%, transparent 50%),
+        var(--bg);
+      line-height: 1.6;
+    }
+    main {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 3.5rem;
+    }
+    h1 {
+      font-size: 1.7rem;
+      font-weight: 700;
+      margin: 0 0 0.4rem;
+      letter-spacing: 0.02em;
+    }
+    .lead {
+      color: var(--muted);
+      margin: 0 0 1.5rem;
+      max-width: 44rem;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.75rem;
+    }
+    .meta span {
+      font-size: 0.85rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--muted);
+    }
+    .meta .hot {
+      border-color: #e8b89a;
+      background: #fff4ec;
+      color: var(--tag);
+      font-weight: 600;
+    }
+    section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1.15rem 1.25rem 1.25rem;
+      margin-bottom: 1.1rem;
+    }
+    h2 {
+      font-size: 1.15rem;
+      margin: 0 0 0.75rem;
+      padding-bottom: 0.45rem;
+      border-bottom: 1px solid var(--line);
+    }
+    h3 {
+      font-size: 1rem;
+      margin: 1rem 0 0.4rem;
+      color: var(--accent);
+    }
+    p, li { font-size: 0.95rem; }
+    ul { margin: 0.4rem 0 0.2rem; padding-left: 1.25rem; }
+    li { margin: 0.25rem 0; }
+    .path {
+      display: grid;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+    .path-card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      background: #fffcf7;
+    }
+    .path-card .title {
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+    }
+    .path-card .flow {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    .price {
+      color: var(--foundation);
+      font-weight: 600;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 0.55rem 0.6rem;
+      text-align: left;
+    }
+    th {
+      background: #f3efe7;
+      font-weight: 600;
+    }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .note {
+      margin-top: 0.75rem;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    .gift-grid {
+      display: grid;
+      gap: 0.65rem;
+      margin-top: 0.5rem;
+    }
+    @media (min-width: 640px) {
+      .gift-grid { grid-template-columns: 1fr 1fr 1fr; }
+    }
+    .gift {
+      border: 1px dashed #d2c4b0;
+      border-radius: 10px;
+      padding: 0.75rem 0.85rem;
+      background: #fffaf3;
+    }
+    .gift strong { display: block; margin-bottom: 0.3rem; }
+    .rule {
+      background: #fff8f0;
+      border-left: 3px solid var(--tag);
+      padding: 0.65rem 0.85rem;
+      margin: 0.6rem 0;
+      font-size: 0.92rem;
+    }
+    footer {
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>限时优惠与续报福利说明</h1>
+    <p class="lead">
+      两套政策并行：限时活动期间报班享学费折扣（可折上折）；只要续报进阶，即赠送三门配套课程
+      （原理课、录播课、大赛样例课）。折扣管学费，赠课管续报福利。
+    </p>
+    <div class="meta">
+      <span class="hot">限时优惠活动：8.5 折</span>
+      <span>续报进阶：8 折</span>
+      <span>可折上折约 6.8 折</span>
+      <span class="hot">续报即送三门课</span>
+    </div>
+
+    <section>
+      <h2>一、课程进阶路径（先修关系）</h2>
+      <p>课程按「基础 → 衔接 → 实战」分层，先修满足后再报下一层更稳妥。</p>
+      <div class="path">
+        <div class="path-card">
+          <div class="title" style="color: var(--foundation);">基础层</div>
+          <div class="flow">
+            零基础 / 未学过 Python →
+            <strong>C01 Python入门班</strong>
+            <span class="price">原价 1280 元</span>
+            （4 周 / 8 次课，零基础可报）
+          </div>
+        </div>
+        <div class="path-card">
+          <div class="title" style="color: var(--bridge);">路径 A：数据 / 传统建模</div>
+          <div class="flow">
+            C01 → <strong>C02 Python数据分析班</strong>
+            <span class="price">3680 元</span>
+            （建议有入门基础）→
+            <strong>C04 机器学习项目班</strong>
+            <span class="price">6980 元</span>
+            （须已学数据分析）
+          </div>
+        </div>
+        <div class="path-card">
+          <div class="title" style="color: var(--advanced);">路径 B：大模型 / Agent</div>
+          <div class="flow">
+            C01 → <strong>C05 大模型应用开发班</strong>
+            <span class="price">5280 元</span>
+            （须有入门基础）→
+            <strong>C06 AI智能体实战班</strong>
+            <span class="price">7580 元</span>
+            （建议先完成大模型班）
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>二、限时优惠活动（学费折扣）</h2>
+
+      <h3>1. 限时优惠：8.5 折</h3>
+      <ul>
+        <li>活动期间新报任意在售课程，学费按原价 <strong>8.5 折</strong>结算。</li>
+        <li>零基础学员限时活动期间报 <strong>C01 入门班</strong>，同样享受 <strong>8.5 折</strong>。</li>
+      </ul>
+
+      <h3>2. 入门结业续报进阶：8 折</h3>
+      <ul>
+        <li>已完成 <strong>C01 Python入门班</strong> 后，续报进阶课程（C02 / C05，以及后续 C04 / C06）可享 <strong>8 折</strong>。</li>
+      </ul>
+
+      <h3>3. 折上折（限时活动 + 续报同时满足）</h3>
+      <div class="rule">
+        若学员在限时活动期间续报进阶，且已满足「入门结业续报」条件，
+        可先享续报 8 折，再叠加限时活动 8.5 折，即实际约为原价的
+        <strong>8 × 8.5 = 6.8 折</strong>（折上折）。
+      </div>
+      <ul>
+        <li>仅「限时活动期间新报、非续报」：只享受 8.5 折。</li>
+        <li>「非限时活动期间、入门后续报进阶」：只享受 8 折。</li>
+        <li>「限时活动期间 + 入门后续报进阶」：可折上折（约 6.8 折）。</li>
+      </ul>
+
+      <h3>4. 零基础一次性打包（同样折上折 + 送三门）</h3>
+      <div class="rule">
+        零基础学员若一次性报名，以下方案均享受整单折上折（约 6.8 折），并赠送原理课、录播课、大赛样例课三门：
+      </div>
+      <ul>
+        <li><strong>入门 + 任意一门进阶</strong>：C01 +（C02 / C04 / C05 / C06 任选一）</li>
+        <li><strong>整条路径 A</strong>：C01 + C02 + C04（数据 / 传统建模）</li>
+        <li><strong>整条路径 B</strong>：C01 + C05 + C06（大模型 / Agent）</li>
+      </ul>
+      <p class="note">费用参考见资料库表「打包报名费用」工作表（如入门+数据分析原价合计 4960 → 约 3373）。</p>
+    </section>
+
+    <section>
+      <h2>三、续报福利：只要续报就送三门课</h2>
+      <div class="rule">
+        只要学员续报进阶课程（C02 / C05 / C04 / C06 任一），即赠送以下三门配套课程。
+        零基础一次性打包（入门+进阶 / 路径A / 路径B）同样送这三门。
+        与限时优惠活动学费折扣相互独立：打折管学费，赠课跟续报/打包走。
+      </div>
+      <div class="gift-grid">
+        <div class="gift">
+          <strong>① 原理课</strong>
+          配套核心概念 / 算法或大模型原理精讲，帮助打牢理论基础。
+        </div>
+        <div class="gift">
+          <strong>② 录播课</strong>
+          重点章节回放与拓展专题，方便复习补课、按自己节奏反复观看。
+        </div>
+        <div class="gift">
+          <strong>③ 大赛样例课</strong>
+          竞赛 / 项目样例包（题目思路、代码骨架、提交规范参考），服务实战与作品集。
+        </div>
+      </div>
+      <ul>
+        <li>触发条件：正式续报任一进阶正课（不要求必须在限时优惠活动期间）。</li>
+        <li>交付：报名确认后由教务开通，三门一并赠送，不另收费。</li>
+        <li>限时优惠活动期间续报：学费可走折上折，同时仍送三门课。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>四、费用参考（学费折扣）</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>课程</th>
+            <th>原价（元）</th>
+            <th>仅限时优惠 8.5 折</th>
+            <th>仅续报 8 折</th>
+            <th>折上折约 6.8 折</th>
+            <th>续报赠课</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>C01 Python入门班</td>
+            <td class="num">1280</td>
+            <td class="num">1088</td>
+            <td class="num">—</td>
+            <td class="num">—</td>
+            <td>首报不触发</td>
+          </tr>
+          <tr>
+            <td>C02 Python数据分析班</td>
+            <td class="num">3680</td>
+            <td class="num">3128</td>
+            <td class="num">2944</td>
+            <td class="num">2502</td>
+            <td>送三门</td>
+          </tr>
+          <tr>
+            <td>C05 大模型应用开发班</td>
+            <td class="num">5280</td>
+            <td class="num">4488</td>
+            <td class="num">4224</td>
+            <td class="num">3590</td>
+            <td>送三门</td>
+          </tr>
+          <tr>
+            <td>C04 机器学习项目班</td>
+            <td class="num">6980</td>
+            <td class="num">5933</td>
+            <td class="num">5584</td>
+            <td class="num">4746</td>
+            <td>送三门</td>
+          </tr>
+          <tr>
+            <td>C06 AI智能体实战班</td>
+            <td class="num">7580</td>
+            <td class="num">6443</td>
+            <td class="num">6064</td>
+            <td class="num">5154</td>
+            <td>送三门</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="note">
+        说明：金额四舍五入到元，最终以报名系统 / 顾问报价单为准。
+        C01 无「续报 8 折」与续报赠课；从续报进阶开始享受续报福利。
+      </p>
+    </section>
+
+    <section>
+      <h2>五、顾问常用话术示例</h2>
+      <ul>
+        <li>
+          <strong>零基础限时报名：</strong>
+          「限时优惠活动报入门班直接 8.5 折，1280 现价约 1088；学完再续进阶，学费还能叠续报 8 折，并且续报就送三门课。」
+        </li>
+        <li>
+          <strong>入门已结业、限时活动期间续报：</strong>
+          「限时优惠活动期间续进阶可以折上折（约 6.8 折），同时只要续报就送原理课、录播课、大赛样例课三门。」
+        </li>
+        <li>
+          <strong>非限时活动期间续报：</strong>
+          「现在续报进阶学费 8 折，并且送三门配套课；限时优惠活动再报名学费还能再叠 8.5 折。」
+        </li>
+        <li>
+          <strong>路径选择：</strong>
+          「偏数据分析 / 建模走 C01→C02→C04；偏大模型 / 智能体走 C01→C05→C06。续报哪条线，赠课都送。」
+        </li>
+      </ul>
+    </section>
+
+    <footer>
+      内部培训 / 对外咨询参考稿 · 与「课程路径-基础与进阶」配套使用 · 最终解释权归教培机构
+    </footer>
+  </main>
+</body>
+</html>
